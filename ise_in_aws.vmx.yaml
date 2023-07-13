@@ -13,7 +13,7 @@
     net_name: "{{ meraki_vmx_net_name }}"
     state: present
     type: appliance
-    timezone: America/Los_Angeles  # Timezones: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+    timezone: Europe/Rome  # Timezones: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
     tags: ise, demo, lab, hub, mx
   register: vmx_network
 

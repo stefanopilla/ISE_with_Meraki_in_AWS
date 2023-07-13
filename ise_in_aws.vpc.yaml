@@ -24,8 +24,6 @@
   #   ansible.builtin.debug: var=vpc
 
 
-
-
   - name: Create an Internet Gateway to connect VPC to Internet
     community.aws.ec2_vpc_igw:
       state: present
@@ -38,9 +36,6 @@
 
   # - name: Show igw
   #   ansible.builtin.debug: var=igw
-
-
-
 
   - name: Create Public_Subnet
     amazon.aws.ec2_vpc_subnet:
@@ -59,8 +54,6 @@
   #   ansible.builtin.debug: var=subnet_public
 
 
-
-
   - name: Create Private_Subnet
     amazon.aws.ec2_vpc_subnet:
       state: present
@@ -76,20 +69,25 @@
   # - name: Show subnet_private
   #   ansible.builtin.debug: var=subnet_private
 
-
-
-
   - name: Create Public Route Table; Add Route from VPC to Internet Gateway
     community.aws.ec2_vpc_route_table:
       state: present
       vpc_id: "{{ vpc.vpc.id }}"
       subnets:
         - "{{ subnet_public.subnet.id }}"
-      routes:
+      routes: 
         - dest: 0.0.0.0/0
           gateway_id: "{{ igw.gateway_id }}"
+        - dest: 10.20.30.0/24
+          gateway_id: "{{ igw.gateway_id }}"
+        - dest: 10.20.31.0/24
+          gateway_id: "{{ igw.gateway_id }}"
+        - dest: 10.20.35.0/24
+          gateway_id: "{{ igw.gateway_id }}"
+        - dest: 10.20.90.0/24
+          gateway_id: "{{ igw.gateway_id }}"        
       tags:
-        Name: RT_Public
+        Name: "RT_PUBLIC_{{ project_name }}"
         project: "{{ project_name }}"
         started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
     register: rt_public
@@ -98,21 +96,24 @@
   #   ansible.builtin.debug: var=rt_public
 
 
-
-
   - name: Create Private Route Table
     community.aws.ec2_vpc_route_table:
       vpc_id: "{{ vpc.vpc.id }}"
       subnets:
         - "{{ subnet_private.subnet.id }}"
-      routes:
+      routes: 
         - dest: 0.0.0.0/0
           gateway_id: "{{ igw.gateway_id }}"
-        # 💡 Update this with other VPN networks after vMX creation! 💡
-        # - dest: 192.168.0.0/16
-        #   instance_id: "{{ vmx.instance_id }}"
+        - dest: 10.20.30.0/24
+          gateway_id: "{{ igw.gateway_id }}"
+        - dest: 10.20.31.0/24
+          gateway_id: "{{ igw.gateway_id }}"
+        - dest: 10.20.35.0/24
+          gateway_id: "{{ igw.gateway_id }}"
+        - dest: 10.20.90.0/24
+          gateway_id: "{{ igw.gateway_id }}" 
       tags:
-        Name: RT_Private
+        Name: "RT_PRIV_{{ project_name }}"
         project: "{{ project_name }}"
         started:  "{{ '%Y-%m-%dT%H:%M:%S-%Z' | strftime }}"
     register: rt_private
@@ -120,6 +121,65 @@
   # - name: Show rt_private
   #   ansible.builtin.debug: var=rt_private
 
+  - name: Create Customer Gateway
+    community.aws.ec2_customer_gateway:
+      ip_address: "{{ mx_public_ip }}"
+      name: "{{ mx_name }}"
+      routing: "static"
+      region: "{{ aws_region }}"
+    register: cgw
 
+  # - name: Show cgw
+  #   ansible.builtin.debug: var=cgw
+
+  - name: Create a new VGW attached to a specific VPC
+    community.aws.ec2_vpc_vgw:
+      state: present
+      region: "{{ aws_region }}"
+      vpc_id: "{{ vpc.vpc.id }}"
+      name: "VGW-{{ project_name }}"
+      type: ipsec.1
+    register: created_vgw
+
+  # - name: Show created_vgw
+  #   ansible.builtin.debug: var=created_vgw
+
+
+  - name: Set up IPSEC VPN with the created Customer Gateway 
+    community.aws.ec2_vpc_vpn:
+      state: present
+      customer_gateway_id: "{{ cgw.gateway.customer_gateway.customer_gateway_id }}"
+      vpn_gateway_id: "{{ created_vgw.vgw.id }}"
+      static_only: true
+      routes: "{{ meraki_vpn_hub.net_cidr }}"
+    register: vpn
+    
+  - name: Show vpn
+    ansible.builtin.debug: var=vpn
+
+  - name: Add Public DNS entry for the MX device
+    when: domain_name is defined
+    community.aws.route53:
+      state: present
+      zone: "{{ domain_name }}"
+      record: "{{ project_name }}-mx.{{ domain_name }}"
+      overwrite: yes
+      private_zone: no
+      type: A
+      ttl: 3600
+      value: "{{ mx_public_ip }}"
+      wait: no
+
+  - name: Show Created Resources
+    ansible.builtin.debug:
+      msg: |
+         
+        Public Record A: "{{ project_name }}-mx.{{ domain_name }}"  
+        Private Record A: 
+        Public Route Table: "RT_PUBLIC_{{ project_name }}"
+        Public Route Table: "RT_PRIVATE_{{ project_name }}"
+        vpc: "{{ vpc }}"
+         
+         
 
 ...

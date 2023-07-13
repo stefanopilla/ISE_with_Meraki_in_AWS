@@ -83,7 +83,7 @@
     community.aws.route53:
       state: present
       zone: "{{ domain_name }}"
-      record: "ping.{{ domain_name }}"
+      record: "pingvm.{{ domain_name }}"
       overwrite: yes
       private_zone: no
       type: A
@@ -96,7 +96,7 @@
     community.aws.route53:
       state: present
       zone: "{{ domain_name }}"
-      record: "ping.{{ domain_name }}"
+      record: "pingvm.{{ domain_name }}"
       overwrite: yes
       private_zone: yes
       type: A

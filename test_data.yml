@@ -1,0 +1,220 @@
+existing_vpn:
+    changed: false
+    data:
+      peers:
+        - name: OVH-1
+          ike_version: '1'
+          ipsec_policies:
+            child_auth_algo:
+            - sha1
+            child_cipher_algo:
+            - aes256
+            child_lifetime: 28800
+            child_pfs_group:
+            - disabled
+            ike_auth_algo:
+            - sha1
+            ike_cipher_algo:
+            - aes256
+            ike_diffie_hellman_group:
+            - group14
+            ike_lifetime: 86400
+          network_tags:
+            - all
+          private_subnets:
+            - 10.123.100.0/24
+            - 10.123.199.0/24
+            - 10.123.200.0/24
+            - 10.123.250.0/24
+            - 10.123.251.0/24
+            - 10.100.90.0/24
+            - 172.17.0.0/16
+            - 10.99.99.0/24
+            - 10.99.100.0/24
+          public_ip: 51.210.198.157
+          remote_id: 51.210.198.157
+          secret: xh#90PmEQ1U6
+          failed: false
+          response: OK (unknown bytes)
+          status: 200
+        - name: OVH-2
+          ike_version: '1'
+          ipsec_policies:
+            child_auth_algo:
+            - sha1
+            child_cipher_algo:
+            - aes256
+            child_lifetime: 28800
+            child_pfs_group:
+            - disabled
+            ike_auth_algo:
+            - sha1
+            ike_cipher_algo:
+            - aes256
+            ike_diffie_hellman_group:
+            - group14
+            ike_lifetime: 86400
+          network_tags:
+            - all
+          private_subnets:
+            - 10.123.100.0/24
+            - 10.123.199.0/24
+            - 10.123.200.0/24
+            - 10.123.250.0/24
+            - 10.123.251.0/24
+            - 10.100.90.0/24
+            - 172.17.0.0/16
+            - 10.99.99.0/24
+            - 10.99.100.0/24
+          public_ip: 51.210.198.157
+          remote_id: 51.210.198.157
+          secret: xh#90PmEQ1U6
+          failed: false
+          response: OK (unknown bytes)
+          status: 200        
+
+vpn:
+  category: VPN
+  changed: false
+  customer_gateway_configuration: |-
+    <?xml version="1.0" encoding="UTF-8"?>
+    <vpn_connection id="vpn-0c1a88ab1a46759e3">
+      <customer_gateway_id>cgw-02f0ca8dd0dc7c2cd</customer_gateway_id>
+      <vpn_gateway_id>vgw-0aec388191ab67e19</vpn_gateway_id>
+      <vpn_connection_type>ipsec.1</vpn_connection_type>
+      <vpn_connection_attributes>NoBGPVPNConnection</vpn_connection_attributes>
+      <ipsec_tunnel>
+        <customer_gateway>
+          <tunnel_outside_address>
+            <ip_address>2.38.105.178</ip_address>
+          </tunnel_outside_address>
+          <tunnel_inside_address>
+            <ip_address>169.254.42.22</ip_address>
+            <network_mask>255.255.255.252</network_mask>
+            <network_cidr>30</network_cidr>
+          </tunnel_inside_address>
+        </customer_gateway>
+        <vpn_gateway>
+          <tunnel_outside_address>
+            <ip_address>18.102.31.229</ip_address>
+          </tunnel_outside_address>
+          <tunnel_inside_address>
+            <ip_address>169.254.42.21</ip_address>
+            <network_mask>255.255.255.252</network_mask>
+            <network_cidr>30</network_cidr>
+          </tunnel_inside_address>
+        </vpn_gateway>
+        <ike>
+          <authentication_protocol>sha1</authentication_protocol>
+          <encryption_protocol>aes-128-cbc</encryption_protocol>
+          <lifetime>28800</lifetime>
+          <perfect_forward_secrecy>group2</perfect_forward_secrecy>
+          <mode>main</mode>
+          <pre_shared_key>Xs1NZG5WxeQL4zap04JMeBqiQtNMTxMX</pre_shared_key>
+        </ike>
+        <ipsec>
+          <protocol>esp</protocol>
+          <authentication_protocol>hmac-sha1-96</authentication_protocol>
+          <encryption_protocol>aes-128-cbc</encryption_protocol>
+          <lifetime>3600</lifetime>
+          <perfect_forward_secrecy>group2</perfect_forward_secrecy>
+          <mode>tunnel</mode>
+          <clear_df_bit>true</clear_df_bit>
+          <fragmentation_before_encryption>true</fragmentation_before_encryption>
+          <tcp_mss_adjustment>1379</tcp_mss_adjustment>
+          <dead_peer_detection>
+            <interval>10</interval>
+            <retries>3</retries>
+          </dead_peer_detection>
+        </ipsec>
+      </ipsec_tunnel>
+      <ipsec_tunnel>
+        <customer_gateway>
+          <tunnel_outside_address>
+            <ip_address>2.38.105.178</ip_address>
+          </tunnel_outside_address>
+          <tunnel_inside_address>
+            <ip_address>169.254.219.242</ip_address>
+            <network_mask>255.255.255.252</network_mask>
+            <network_cidr>30</network_cidr>
+          </tunnel_inside_address>
+        </customer_gateway>
+        <vpn_gateway>
+          <tunnel_outside_address>
+            <ip_address>18.102.103.102</ip_address>
+          </tunnel_outside_address>
+          <tunnel_inside_address>
+            <ip_address>169.254.219.241</ip_address>
+            <network_mask>255.255.255.252</network_mask>
+            <network_cidr>30</network_cidr>
+          </tunnel_inside_address>
+        </vpn_gateway>
+        <ike>
+          <authentication_protocol>sha1</authentication_protocol>
+          <encryption_protocol>aes-128-cbc</encryption_protocol>
+          <lifetime>28800</lifetime>
+          <perfect_forward_secrecy>group2</perfect_forward_secrecy>
+          <mode>main</mode>
+          <pre_shared_key>CxzA_JcfGrGReHVtVEKDeKvoa73jD8AF</pre_shared_key>
+        </ike>
+        <ipsec>
+          <protocol>esp</protocol>
+          <authentication_protocol>hmac-sha1-96</authentication_protocol>
+          <encryption_protocol>aes-128-cbc</encryption_protocol>
+          <lifetime>3600</lifetime>
+          <perfect_forward_secrecy>group2</perfect_forward_secrecy>
+          <mode>tunnel</mode>
+          <clear_df_bit>true</clear_df_bit>
+          <fragmentation_before_encryption>true</fragmentation_before_encryption>
+          <tcp_mss_adjustment>1379</tcp_mss_adjustment>
+          <dead_peer_detection>
+            <interval>10</interval>
+            <retries>3</retries>
+          </dead_peer_detection>
+        </ipsec>
+      </ipsec_tunnel>
+    </vpn_connection>
+  customer_gateway_id: cgw-02f0ca8dd0dc7c2cd
+  failed: false
+  gateway_association_state: associated
+  options:
+    enable_acceleration: false
+    local_ipv4_network_cidr: 0.0.0.0/0
+    outside_ip_address_type: PublicIpv4
+    remote_ipv4_network_cidr: 0.0.0.0/0
+    static_routes_only: true
+    tunnel_inside_ip_version: ipv4
+    tunnel_options:
+    - log_options:
+        cloud_watch_log_options:
+          log_enabled: false
+      outside_ip_address: 18.102.31.229
+      pre_shared_key: Xs1NZG5WxeQL4zap04JMeBqiQtNMTxMX
+      tunnel_inside_cidr: 169.254.42.20/30
+    - log_options:
+        cloud_watch_log_options:
+          log_enabled: false
+      outside_ip_address: 18.102.103.102
+      pre_shared_key: CxzA_JcfGrGReHVtVEKDeKvoa73jD8AF
+      tunnel_inside_cidr: 169.254.219.240/30
+  routes:
+  - destination_cidr_block: 10.20.90.0/24
+    state: available
+  - destination_cidr_block: 10.20.30.0/24
+    state: available
+  state: available
+  tags: {}
+  type: ipsec.1
+  vgw_telemetry:
+  - accepted_route_count: 2
+    last_status_change: '2023-06-09T17:04:55+00:00'
+    outside_ip_address: 18.102.31.229
+    status: DOWN
+    status_message: ''
+  - accepted_route_count: 2
+    last_status_change: '2023-06-09T17:04:55+00:00'
+    outside_ip_address: 18.102.103.102
+    status: DOWN
+    status_message: ''
+  vpn_connection_id: vpn-0c1a88ab1a46759e3
+  vpn_gateway_id: vgw-0aec388191ab67e19

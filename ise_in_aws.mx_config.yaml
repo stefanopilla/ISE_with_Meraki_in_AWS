@@ -1,0 +1,123 @@
+---
+
+#
+# The default LAN Setting for a new network will be :
+#
+# | Name                | Subnet            | MX IP
+# |---------------------|-------------------|--------------
+# | Single LAN Settings | 192.168.128.0/24  | 192.168.128.1
+#
+
+- name: Query network '{{ meraki_org_name }}:{{ meraki_net_name }}'
+  cisco.meraki.meraki_network:
+    org_name: "{{ meraki_org_name }}"
+    net_name: "{{ meraki_net_name }}"
+    state: query
+  register: net_check
+
+# - name: net_check
+#   ansible.builtin.debug: var=net_check
+
+- name: Find {{ meraki_vpn_hub.net_name }} Network to use as VPN Hub
+  cisco.meraki.meraki_network:
+    org_name: "{{ meraki_org_name }}"
+    net_name: "{{ meraki_vpn_hub.net_name }}"
+    state: query
+  register: lab_network
+
+# - name: Show lab_network
+#   ansible.builtin.debug: var=lab_network.data
+
+- name: Set MX to VPN Spoke mode to Lab Hub
+  cisco.meraki.meraki_site_to_site_vpn:
+    org_name: "{{ meraki_org_name }}"
+    net_name: "{{ meraki_net_name }}"
+    state: present
+    mode: hub # use `spoke` to avoid AWS $$$ for outbound `hub` traffic
+    hubs:
+      - hub_id: "{{ lab_network.data.id }}"
+        use_default_route: false # send all default route traffic to this hub
+  register: spoke_mode
+# - name: spoke_mode
+#   ansible.builtin.debug: var=spoke_mode
+
+# Check the existing VPN Peers
+- name: Check the existing VPN
+  cisco.meraki.meraki_mx_third_party_vpn_peers:
+    state: query
+    org_name: "{{ meraki_org_name }}"
+  register: existing_vpn
+
+- name: existing_vpn
+  ansible.builtin.debug: var=existing_vpn
+
+# Merge Existing with AWS Entries 
+
+- name: Create a list of peers 
+  set_fact: 
+    peer_list: "{{ peer_list | default ([]) + [item]  }}" 
+  loop: "{{ existing_vpn.data.peers }}"
+
+- name: Add the list of peers for AWS
+  set_fact: 
+    peer_list_aws: 
+      - name: "AWS-{{ vpn.options.tunnel_options[0].outside_ip_address }}"
+        ike_version: "1"
+        ipsec_policies:
+          child_auth_algo: 
+          - sha1
+          child_cipher_algo: 
+          - aes128
+          child_lifetime: 28800
+          child_pfs_group: 
+          - group2
+          ike_auth_algo: 
+          - sha1
+          ike_cipher_algo: 
+          - aes128
+          ike_diffie_hellman_group: 
+          - group2
+          ike_lifetime: 3600
+        private_subnets: "{{ aws_vpc_cidr }}"
+        public_ip: "{{ vpn.options.tunnel_options[0].outside_ip_address }}"
+        remote_id: "{{ vpn.options.tunnel_options[0].outside_ip_address }}"
+        secret: "{{ vpn.options.tunnel_options[0].pre_shared_key }}"
+        network_tags:
+        - all
+      - name: "AWS-{{ vpn.options.tunnel_options[1].outside_ip_address }}"
+        ike_version: "1"
+        ipsec_policies:
+          child_auth_algo: 
+          - sha1
+          child_cipher_algo: 
+          - aes128
+          child_lifetime: 28800
+          child_pfs_group: 
+          - group2
+          ike_auth_algo: 
+          - sha1
+          ike_cipher_algo: 
+          - aes128
+          ike_diffie_hellman_group: 
+          - group2
+          ike_lifetime: 3600
+        private_subnets: "{{ aws_vpc_cidr }}"
+        public_ip: "{{ vpn.options.tunnel_options[1].outside_ip_address }}"
+        remote_id: "{{ vpn.options.tunnel_options[1].outside_ip_address }}"
+        secret: "{{ vpn.options.tunnel_options[1].pre_shared_key }}"
+        network_tags:
+        - all
+
+- name: Combine the list of peers
+  set_fact: 
+    ipsec_peers: "{{ peer_list + peer_list_aws }}"
+
+- name: ipsec_peers
+  ansible.builtin.debug: var=ipsec_peers
+
+# Create IP Sec 
+- name: Create VPN peer with an IPsec policy
+  cisco.meraki.meraki_mx_third_party_vpn_peers:
+    state: present
+    org_name: "{{ meraki_org_name }}"
+    peers: "{{ ipsec_peers }}"

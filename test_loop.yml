@@ -1,0 +1,66 @@
+- name: Provision AWS VPC with Cisco ISE and Meraki vMX 
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    test_data.yml
+
+  tasks:
+    - name: Create a list of peers 
+      set_fact: 
+        peer_list: "{{ peer_list | default ([]) + [item]  }}" 
+      loop: "{{ existing_vpn.data.peers }}"
+
+    - name: Add the list of peers for AWS
+      set_fact: 
+        peer_list_aws: 
+          - name: "AWS-{{ vpn.options.tunnel_options[0].outside_ip_address }}"
+            ike_version: "1"
+            ipsec_policies:
+              child_auth_algo: 
+              - sha1
+              child_cipher_algo: 
+              - aes128
+              child_lifetime: 28800
+              child_pfs_group: 
+              - 2
+              ike_auth_algo: 
+              - sha1
+              ike_cipher_algo: 
+              - aes128
+              ike_diffie_hellman_group: 
+              - group2
+              ike_lifetime: 3600
+            private_subnets: "172.17.31.0/24"
+            public_ip: "AWS-{{ vpn.options.tunnel_options[0].outside_ip_address }}"
+            remote_id: "AWS-{{ vpn.options.tunnel_options[0].outside_ip_address }}"
+            secret: "{{ vpn.options.tunnel_options[0].pre_shared_key }}"
+            failed: false
+            network_tags:
+            - all
+          - name: "AWS-{{ vpn.options.tunnel_options[1].outside_ip_address }}"
+            ike_version: "1"
+            ipsec_policies:
+              child_auth_algo: 
+              - sha1
+              child_cipher_algo: 
+              - aes128
+              child_lifetime: 28800
+              child_pfs_group: 
+              - 2
+              ike_auth_algo: 
+              - sha1
+              ike_cipher_algo: 
+              - aes128
+              ike_diffie_hellman_group: 
+              - group2
+              ike_lifetime: 3600
+            private_subnets: "172.17.31.0/24"
+            public_ip: "AWS-{{ vpn.options.tunnel_options[1].outside_ip_address }}"
+            remote_id: "AWS-{{ vpn.options.tunnel_options[1].outside_ip_address }}"
+            secret: "{{ vpn.options.tunnel_options[1].pre_shared_key }}"
+            failed: false
+            network_tags:
+            - all
+
+    - name: peer_list_aws
+      ansible.builtin.debug: var=peer_list_aws+peer_list

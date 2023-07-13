@@ -3,7 +3,6 @@
 # Main YAML Playbook to launch ISE with Meraki vMX in AWS
 #------------------------------------------------------------------------------
 
-
 - name: Provision AWS VPC with Cisco ISE and Meraki vMX 
   hosts: localhost
   gather_facts: no
@@ -11,85 +10,97 @@
     vars/main.yaml
   tasks:
 
+# Create an SSH KeyPair to be used for AWS 
   - name: Create SSH KeyPair
     ansible.builtin.include_tasks: ssh_key_pair.yaml
+    tags
 
+# Create VPC into AWS 
   - name: Create VPC
     ansible.builtin.include_tasks: ise_in_aws.vpc.yaml
+    tags: configure_aws
 
-  - name: Create vMX
-    ansible.builtin.include_tasks: ise_in_aws.vmx.yaml
-    tags: meraki,vmx
-
+# Create EC2 Instance to test ping into AWS 
   - name: Create PingVM
     ansible.builtin.include_tasks: ise_in_aws.ping_vm.yaml
+    tags: pingVM
 
-  - name: Create ISE (no wait)
-    ansible.builtin.include_tasks: ise_in_aws.ise.yaml
+# Create vMX Instance in AWS
+#  - name: Create vMX
+#    ansible.builtin.include_tasks: ise_in_aws.vmx.yaml
+#    tags: meraki,vmx
 
-  - name: Create Meraki MR SSIDs
-    ansible.builtin.include_tasks: ise_in_aws.mr_ssids.yaml
+# Configure VPN on the existing MX Appliance
+  - name: Config MX Appliance
+    ansible.builtin.include_tasks: ise_in_aws.mx_config.yaml
+    tags: meraki,mx
 
-  - name: Refresh AWS Inventory to get the new Instance(s)
-    ansible.builtin.meta: refresh_inventory
+#  - name: Create ISE (no wait)
+#    ansible.builtin.include_tasks: ise_in_aws.ise.yaml
 
+#  - name: Create Meraki MR SSIDs
+#    ansible.builtin.include_tasks: ise_in_aws.mr_ssids.yaml
 
-- name: Initialize ISE Node(s)
-  hosts: ise
-  gather_facts: no
-  vars_files:
-    vars/main.yaml
-  tasks:
-
-  - name: Wait for ISE Application Server Initialization
-    ansible.builtin.include_tasks: tasks/ise_initialized.yaml
-
-  - name: Show ISE Node Login URLs
-    loop: "{{ ise_nodes }}"
-    ansible.builtin.debug:
-      msg: |
-         
-                .
-               /|\
-              /|||\
-           @ /|||||\ @
-          @  \|/ \|/  @   https://{{ ansible_host }}
-          @           @   https://{{ inventory_hostname }}.{{ domain_name }}
-           @.       .@
-            `Y@ @ @Y`
-         
-         
+#  - name: Refresh AWS Inventory to get the new Instance(s)
+#    ansible.builtin.meta: refresh_inventory
 
 
-  # - name: Press Enter to Continue
-  #   ansible.builtin.pause:
-  #     prompt: |
-  #        
-  #         █  █    
-  #         █  █    Press Enter to Continue and Configure ISE!
-  #         █  █    
-  #        
+# - name: Initialize ISE Node(s)
+#   hosts: ise
+#   gather_facts: no
+#   vars_files:
+#     vars/main.yaml
+#   tasks:
+
+#   - name: Wait for ISE Application Server Initialization
+#     ansible.builtin.include_tasks: tasks/ise_initialized.yaml
+
+#   - name: Show ISE Node Login URLs
+#     loop: "{{ ise_nodes }}"
+#     ansible.builtin.debug:
+#       msg: |
+#          
+#                 .
+#                /|\
+#               /|||\
+#            @ /|||||\ @
+#           @  \|/ \|/  @   https://{{ ansible_host }}
+#           @           @   https://{{ inventory_hostname }}.{{ domain_name }}
+#            @.       .@
+#             `Y@ @ @Y`
+#          
+#          
 
 
-  - name: Configure ISE
-    ansible.builtin.include_tasks: ise.configuration.yaml
+#   # - name: Press Enter to Continue
+#   #   ansible.builtin.pause:
+#   #     prompt: |
+#   #        
+#   #         █  █    
+#   #         █  █    Press Enter to Continue and Configure ISE!
+#   #         █  █    
+#   #        
 
 
-  - name: ISE ({{ inventory_hostname }}) is Ready!
-    ansible.builtin.pause:
-      seconds: 1
-      prompt: |
-         
-         
-                .
-               /|\
-           @  /|||\  @      ___                _        _
-          @  /|||||\  @    | _ \ ___  __ _  __| | _  _ | |
-          @  \|/ \|/  @    |   // -_)/ _` |/ _` || || ||_|
-           @.       .@     |_|_\\___|\__,_|\__,_| \_, |(_)
-            `Y@ @ @Y`                             |__/
-         
-         
+#   - name: Configure ISE
+#     ansible.builtin.include_tasks: ise.configuration.yaml
+
+
+#   - name: ISE ({{ inventory_hostname }}) is Ready!
+#     ansible.builtin.pause:
+#       seconds: 1
+#       prompt: |
+#          
+#          
+#                 .
+#                /|\
+#            @  /|||\  @      ___                _        _
+#           @  /|||||\  @    | _ \ ___  __ _  __| | _  _ | |
+#           @  \|/ \|/  @    |   // -_)/ _` |/ _` || || ||_|
+#            @.       .@     |_|_\\___|\__,_|\__,_| \_, |(_)
+#             `Y@ @ @Y`                             |__/
+#          
+#          
 
 
 ...
